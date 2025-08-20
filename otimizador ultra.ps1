@@ -1,26 +1,14 @@
-﻿# ===================================================
-# 💥 OTIMIZADOR PC ULTRA - VERSÃO FINAL (PRONTO PARA USAR)
-# ✅ Copie, salve como .ps1 e execute
 # ===================================================
-
-# Verifica e pede execução como administrador
-if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Start-Process powershell.exe "-ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
-    exit
-}
+# OTIMIZADOR PC ULTRA - VERSÃO FINAL
+# GUI Avançada com +15 Funções
+# PowerShell + Windows Forms
+# ===================================================
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
-# Função de mensagem
-function Show-Message {
-    param([string]$Text, [string]$Title = "Otimizador PC", [string]$Icon = "Information")
-    [System.Windows.Forms.MessageBox]::Show($Text, $Title, "OK", $Icon)
-}
-
-# Cria janela principal
 $form = New-Object System.Windows.Forms.Form
-$form.Text = "💥 Otimizador PC ULTRA"
+$form.Text = "Otimizador PC Ultra"
 $form.Size = New-Object System.Drawing.Size(700, 600)
 $form.StartPosition = "CenterScreen"
 $form.BackColor = "#1e1e1e"
@@ -29,20 +17,25 @@ $form.Font = New-Object System.Drawing.Font("Segoe UI", 9)
 $form.FormBorderStyle = "Sizable"
 $form.MaximizeBox = $true
 
-# CriaTabControl
 $tabControl = New-Object System.Windows.Forms.TabControl
 $tabControl.Dock = "Fill"
 
+# Função de mensagem
+function Show-Message {
+    param([string]$Text, [string]$Title = "Otimizador PC", [string]$Icon = "Information")
+    [System.Windows.Forms.MessageBox]::Show($Text, $Title, "OK", $Icon)
+}
+
 # =================== ABA: LIMPEZA ===================
 $tabClean = New-Object System.Windows.Forms.TabPage
-$tabClean.Text = "🧹 Limpeza"
+$tabClean.Text = "Limpeza"
 $flowClean = New-Object System.Windows.Forms.FlowLayoutPanel
 $flowClean.Dock = "Fill"
 $flowClean.AutoScroll = $true
 $flowClean.BackColor = "#2d2d2d"
 
 $cleanButtons = @(
-    @{ Text = "🗑️ Limpar Temporários"; Action = {
+    @{ Text = "Limpar Arquivos Temporários"; Action = {
         $paths = "$env:TEMP\*", "C:\Windows\Temp\*", "$env:LOCALAPPDATA\Temp\*", "$env:WINDIR\Prefetch\*"
         $total = 0
         foreach ($p in $paths) {
@@ -50,38 +43,28 @@ $cleanButtons = @(
             if ($files) { $total += $files.Count }
             Remove-Item $p -Recurse -Force -ErrorAction SilentlyContinue
         }
-        Show-Message "✅ $total arquivos removidos!" "Limpeza"
+        Show-Message "$total arquivos removidos com sucesso." "Limpeza"
     }}
 
-    @{ Text = "🌐 Limpar Cache Navegadores"; Action = {
+    @{ Text = "Limpar Cache de Navegadores"; Action = {
         Remove-Item "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Cache\*" -Recurse -Force -ErrorAction SilentlyContinue
         Remove-Item "$env:LOCALAPPDATA\Microsoft\Edge\User Data\Default\Cache\*" -Recurse -Force -ErrorAction SilentlyContinue
-        Show-Message "✅ Cache do Chrome e Edge limpo!" "Navegadores"
+        Show-Message "Cache do Chrome e Edge limpo com sucesso." "Navegadores"
     }}
 
-    @{ Text = "🧼 Limpar Logs do Windows"; Action = {
+    @{ Text = "Limpar Logs do Windows"; Action = {
         wevtutil el | ForEach-Object { wevtutil cl $_ }
-        Show-Message "✅ Todos os logs do sistema foram limpos." "Logs"
+        Show-Message "Todos os logs do sistema foram limpos." "Logs"
     }}
 
-    @{ Text = "📦 Desinstalar Apps do Windows"; Action = {
+    @{ Text = "Remover Aplicativos do Windows"; Action = {
         $apps = "*Xbox*", "*TikTok*", "*Solitaire*", "*Skype*", "*Teams*", "*Clipchamp*"
         $removed = 0
         foreach ($app in $apps) {
             Get-AppxPackage $app | Remove-AppxPackage -ErrorAction SilentlyContinue
             $removed++
         }
-        Show-Message "✅ $removed apps removidos!" "Apps"
-    }}
-
-    @{ Text = "🛍️ Limpar Cache da Microsoft Store"; Action = {
-        Start-Process "wsreset.exe" -WindowStyle Hidden
-        Show-Message "✅ Cache da Microsoft Store limpo!" "Store"
-    }}
-
-    @{ Text = "🧹 Limpar Atualizações Antigas"; Action = {
-        Start-Process dism.exe -ArgumentList "/Online /Cleanup-Image /StartComponentCleanup" -Verb RunAs -Wait
-        Show-Message "✅ Espaço liberado no WinSxS!" "Limpeza"
+        Show-Message "$removed aplicativos removidos." "Aplicativos"
     }}
 )
 
@@ -101,45 +84,33 @@ $tabControl.Controls.Add($tabClean)
 
 # =================== ABA: OTIMIZAÇÃO ===================
 $tabOptimize = New-Object System.Windows.Forms.TabPage
-$tabOptimize.Text = "⚡ Otimização"
+$tabOptimize.Text = "Otimização"
 $flowOpt = New-Object System.Windows.Forms.FlowLayoutPanel
 $flowOpt.Dock = "Fill"
 $flowOpt.AutoScroll = $true
 $flowOpt.BackColor = "#2d2d2d"
 
 $optButtons = @(
-    @{ Text = "💽 Otimizar Disco (SSD/HDD)"; Action = {
+    @{ Text = "Otimizar Disco (SSD/HDD)"; Action = {
         Optimize-Volume -DriveLetter C -Defrag -ErrorAction SilentlyContinue
-        Show-Message "✅ Disco otimizado!" "Sucesso"
+        Show-Message "Disco otimizado com sucesso." "Otimização"
     }}
 
-    @{ Text = "🧠 Desativar Efeitos Visuais"; Action = {
+    @{ Text = "Desativar Efeitos Visuais"; Action = {
         Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "DragFullWindows" -Value "0"
         Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "MenuShowDelay" -Value "80"
         Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "WaitToKillAppTimeout" -Value "2000"
-        Show-Message "✅ Animações reduzidas para melhor desempenho." "Desempenho"
+        Show-Message "Efeitos visuais reduzidos para melhor desempenho." "Desempenho"
     }}
 
-    @{ Text = "🔋 Desativar Hibernação"; Action = {
+    @{ Text = "Desativar Hibernação"; Action = {
         powercfg /h off
-        Show-Message "✅ Hibernação desativada. Liberado ~5GB." "Hibernação"
+        Show-Message "Hibernação desativada. Espaço liberado." "Energia"
     }}
 
-    @{ Text = "⚡ Modo de Alto Desempenho"; Action = {
+    @{ Text = "Ativar Modo de Alto Desempenho"; Action = {
         powercfg /setactive SCHEME_MIN
-        Show-Message "✅ Modo de alto desempenho ativado!" "Desempenho"
-    }}
-
-    @{ Text = "🧠 Forçar Limpeza de RAM"; Action = {
-        $signature = '[DllImport("psapi.dll")] public static extern bool EmptyWorkingSet(IntPtr hwProc);'
-        $empty = Add-Type -MemberDefinition $signature -Name "Win32" -PassThru
-        Get-Process | ForEach-Object { try { $null = $empty::EmptyWorkingSet($_.Handle) } catch {} }
-        Show-Message "✅ Memória RAM limpa!" "RAM"
-    }}
-
-    @{ Text = "📦 Compactar Espaço em Disco"; Action = {
-        Start-Process compact -ArgumentList "/c /s:C:\ /q" -Verb RunAs -Wait
-        Show-Message "✅ Arquivos compactados. Economia de espaço!" "Compact"
+        Show-Message "Modo de alto desempenho ativado." "Energia"
     }}
 )
 
@@ -159,28 +130,28 @@ $tabControl.Controls.Add($tabOptimize)
 
 # =================== ABA: PRIVACIDADE ===================
 $tabPrivacy = New-Object System.Windows.Forms.TabPage
-$tabPrivacy.Text = "🔐 Privacidade"
+$tabPrivacy.Text = "Privacidade"
 $flowPriv = New-Object System.Windows.Forms.FlowLayoutPanel
 $flowPriv.Dock = "Fill"
 $flowPriv.AutoScroll = $true
 $flowPriv.BackColor = "#2d2d2d"
 
 $privButtons = @(
-    @{ Text = "🚫 Desativar Telemetria"; Action = {
+    @{ Text = "Desativar Telemetria"; Action = {
         Set-Service "DiagTrack" -StartupType Disabled -ErrorAction SilentlyContinue
         Set-Service "dmwappushservice" -StartupType Disabled -ErrorAction SilentlyContinue
         Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Value 0 -ErrorAction SilentlyContinue
-        Show-Message "✅ Telemetria do Windows desativada!" "Privacidade"
+        Show-Message "Telemetria do Windows desativada." "Privacidade"
     }}
 
-    @{ Text = "🧹 Limpar Histórico do Windows"; Action = {
+    @{ Text = "Limpar Histórico do Windows"; Action = {
         Clear-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU" -Name "*" -ErrorAction SilentlyContinue
         $shell = New-Object -ComObject Shell.Application
         $shell.NameSpace(0x10).Self.InvokeVerb("scanforbrokenshortcuts")
-        Show-Message "✅ Histórico e atalhos quebrados limpos!" "Histórico"
+        Show-Message "Histórico e atalhos quebrados limpos." "Privacidade"
     }}
 
-    @{ Text = "🌐 Mostrar Senhas Wi-Fi Salvas"; Action = {
+    @{ Text = "Exportar Senhas Wi-Fi"; Action = {
         $networks = (netsh wlan show profiles) -Match "All User Profile"
         $output = "Senhas Wi-Fi Salvas:`r`n`r`n"
         foreach ($net in $networks) {
@@ -190,9 +161,8 @@ $privButtons = @(
             $output += "$name -> $pass`r`n"
         }
         $output += "`r`nOtimizador PC ULTRA - 2025"
-        $path = "$env:USERPROFILE\Desktop\Wi-Fi_Senhas.txt"
-        Set-Content -Path $path -Value $output
-        Show-Message "✅ Senhas salvas em: $path" "Wi-Fi"
+        Set-Content -Path "$env:USERPROFILE\Desktop\Wi-Fi_Senhas.txt" -Value $output
+        Show-Message "Senhas exportadas para Área de Trabalho\Wi-Fi_Senhas.txt" "Wi-Fi"
     }}
 )
 
@@ -212,7 +182,7 @@ $tabControl.Controls.Add($tabPrivacy)
 
 # =================== ABA: INFORMAÇÕES ===================
 $tabInfo = New-Object System.Windows.Forms.TabPage
-$tabInfo.Text = "📊 Informações"
+$tabInfo.Text = "Informações do Sistema"
 $panelInfo = New-Object System.Windows.Forms.Panel
 $panelInfo.Dock = "Fill"
 $panelInfo.BackColor = "#2d2d2d"
@@ -225,7 +195,7 @@ $lblInfo.Size = New-Object System.Drawing.Size(650, 500)
 $lblInfo.ForeColor = "#00ff00"
 
 $btnRefresh = New-Object System.Windows.Forms.Button
-$btnRefresh.Text = "🔄 Atualizar"
+$btnRefresh.Text = "Atualizar"
 $btnRefresh.Location = New-Object System.Drawing.Point(20, 520)
 $btnRefresh.Size = New-Object System.Drawing.Size(100, 30)
 $btnRefresh.BackColor = "#1abc9c"
@@ -240,14 +210,14 @@ $btnRefresh.Add_Click({
     $used = "{0:N2} GB" -f ($disk.Used / 1GB)
     
     $lblInfo.Text = "
-💻 Sistema: $os
-🔧 CPU: $cpu
-🧠 RAM: $ram
-💾 Disco C:
+Sistema: $os
+CPU: $cpu
+Memória RAM: $ram
+Disco C:
    Usado: $used
    Livre: $free
 
-📌 Otimizador PC ULTRA - 2025
+Otimizador PC ULTRA - 2025
 "
 })
 
@@ -256,65 +226,35 @@ $panelInfo.Controls.Add($btnRefresh)
 $tabInfo.Controls.Add($panelInfo)
 $tabControl.Controls.Add($tabInfo)
 
-# =================== ABA: UTILS ===================
+# =================== ABA: UTILITÁRIOS ===================
 $tabUtils = New-Object System.Windows.Forms.TabPage
-$tabUtils.Text = "🛠️ Utilitários"
+$tabUtils.Text = "Utilitários"
 $flowUtils = New-Object System.Windows.Forms.FlowLayoutPanel
 $flowUtils.Dock = "Fill"
 $flowUtils.AutoScroll = $true
 $flowUtils.BackColor = "#2d2d2d"
 
 $utilsButtons = @(
-    @{ Text = "🔍 Localizar Arquivos Grandes (>100MB)"; Action = {
-        $files = Get-ChildItem -Path "C:\" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Length -gt 100MB } | Select-Object FullName, @{Name="SizeMB";Expression={"{0:N2} MB" -f ($_.Length / 1MB)}} -First 50
+    @{ Text = "Localizar Arquivos Grandes (>100MB)"; Action = {
+        $files = Get-ChildItem -Path "C:\" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Length -gt 100MB -and !$_.PSIsContainer } | Select-Object FullName, @{Name="SizeMB";Expression={"{0:N2} MB" -f ($_.Length / 1MB)}} -First 50
         $files | Out-File "$env:USERPROFILE\Desktop\Arquivos_Grandes.txt"
-        Show-Message "✅ Resultado salvo no Desktop!" "Grandes"
+        Show-Message "Arquivos grandes exportados para Área de Trabalho\Arquivos_Grandes.txt" "Análise de Disco"
     }}
 
-    @{ Text = "🛡️ Verificar Integridade (SFC/DISM)"; Action = {
+    @{ Text = "Verificar Integridade (SFC/DISM)"; Action = {
         Start-Process powershell -ArgumentList "dism /online /cleanup-image /restorehealth; sfc /scannow" -Verb RunAs -Wait
-        Show-Message "✅ Verificação do sistema concluída!" "Sistema"
+        Show-Message "Verificação do sistema concluída." "Sistema"
     }}
 
-    @{ Text = "🔄 Forçar Atualização do Windows"; Action = {
+    @{ Text = "Forçar Atualização do Windows"; Action = {
         Start-Process "usoclient StartInteractiveScan" -Verb RunAs
-        Show-Message "✅ Verificação de atualizações iniciada!" "Atualizações"
+        Show-Message "Verificação de atualizações iniciada." "Windows Update"
     }}
 
-    @{ Text = "📁 Abrir Ferramentas do Sistema"; Action = {
+    @{ Text = "Abrir Ferramentas do Sistema"; Action = {
         Start-Process "msconfig"
         Start-Process "cleanmgr"
         Start-Process "perfmon"
-    }}
-
-    @{ Text = "📁 Backup: Documentos → Desktop"; Action = {
-        $src = "$env:USERPROFILE\Documents"
-        $dst = "$env:USERPROFILE\Desktop\Backup_Documentos_$(Get-Date -Format 'ddMM')"
-        if (Test-Path $dst) { Remove-Item $dst -Recurse -Force }
-        Copy-Item $src -Destination $dst -Recurse -ErrorAction SilentlyContinue
-        Show-Message "✅ Backup feito em: $dst" "Backup"
-    }}
-
-    @{ Text = "📶 Alternar Wi-Fi Ligado/Desligado"; Action = {
-        $wifi = Get-NetAdapter -Name "Wi-Fi" -ErrorAction SilentlyContinue
-        if (!$wifi) { Show-Message "❌ Adaptador Wi-Fi não encontrado." "Erro"; return }
-        if ($wifi.Status -eq "Up") {
-            $wifi | Disable-NetAdapter -Confirm:$false
-            Show-Message "✅ Wi-Fi desligado." "Rede"
-        } else {
-            $wifi | Enable-NetAdapter -Confirm:$false
-            Show-Message "✅ Wi-Fi ligado." "Rede"
-        }
-    }}
-
-    @{ Text = "🔍 Verificar EXEs no Temp"; Action = {
-        $exes = Get-ChildItem "$env:TEMP" -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue
-        if ($exes) {
-            $exes | Select-Object FullName, CreationTime | Export-Csv "$env:USERPROFILE\Desktop\Suspeitos.csv" -Encoding UTF8
-            Show-Message "⚠️ $($exes.Count) arquivos .exe encontrados! Veja no Desktop." "Segurança"
-        } else {
-            Show-Message "✅ Nenhum .exe encontrado no Temp." "Segurança"
-        }
     }}
 )
 
@@ -332,7 +272,7 @@ foreach ($btn in $utilsButtons) {
 $tabUtils.Controls.Add($flowUtils)
 $tabControl.Controls.Add($tabUtils)
 
-# Adiciona oTabControl ao formulário
+# Adicionar tudo ao formulário
 $form.Controls.Add($tabControl)
 
 # Botão de sair
@@ -346,6 +286,4 @@ $form.Controls.Add($btnExit)
 
 $form.CancelButton = $btnExit
 $form.Add_Shown({ $btnRefresh.PerformClick() })
-
-# Mostra a janela
 $form.ShowDialog() | Out-Null
